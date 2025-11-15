@@ -44,30 +44,30 @@ VEC_OUT = VEC
 T1_OUT = T1
 T2_OUT = T2
 
-_DST_SHITF = 5
+IN_SHITF = 5
 
-MSR_IN = MSR << _DST_SHITF
-MAR_IN = MAR << _DST_SHITF
-MDR_IN = MDR << _DST_SHITF
-RAM_IN = RAM << _DST_SHITF
-IR_IN = IR << _DST_SHITF
-DST_IN = DST << _DST_SHITF
-SRC_IN = SRC << _DST_SHITF
-A_IN = A << _DST_SHITF
-B_IN = B << _DST_SHITF
-C_IN = C << _DST_SHITF
-D_IN = D << _DST_SHITF
-DI_IN = DI << _DST_SHITF
-SI_IN = SI << _DST_SHITF
-SP_IN = SP << _DST_SHITF
-BP_IN = BP << _DST_SHITF
-CS_IN = CS << _DST_SHITF
-DS_IN = DS << _DST_SHITF
-SS_IN = SS << _DST_SHITF
-ES_IN = ES << _DST_SHITF
-VEC_IN = VEC << _DST_SHITF
-T1_IN = T1 << _DST_SHITF
-T2_IN = T2  << _DST_SHITF
+MSR_IN = MSR << IN_SHITF
+MAR_IN = MAR << IN_SHITF
+MDR_IN = MDR << IN_SHITF
+RAM_IN = RAM << IN_SHITF
+IR_IN = IR << IN_SHITF
+DST_IN = DST << IN_SHITF
+SRC_IN = SRC << IN_SHITF
+A_IN = A << IN_SHITF
+B_IN = B << IN_SHITF
+C_IN = C << IN_SHITF
+D_IN = D << IN_SHITF
+DI_IN = DI << IN_SHITF
+SI_IN = SI << IN_SHITF
+SP_IN = SP << IN_SHITF
+BP_IN = BP << IN_SHITF
+CS_IN = CS << IN_SHITF
+DS_IN = DS << IN_SHITF
+SS_IN = SS << IN_SHITF
+ES_IN = ES << IN_SHITF
+VEC_IN = VEC << IN_SHITF
+T1_IN = T1 << IN_SHITF
+T2_IN = T2  << IN_SHITF
 
 SRC_R = 2 ** 10
 SRC_W = 2 ** 11
@@ -82,4 +82,28 @@ PC_OUT = PC_CS
 PC_IN = PC_CS | PC_WE
 PC_INC = PC_CS | PC_WE | PC_EN
 
+CYC = 2 ** 30
 HLT = 2 ** 31
+
+"""
+二地址指令：
+1xxx[AMD][AMS]
+一地址指令：
+01xxxx[AMD]
+零地址指令：
+00xxxxxx
+"""
+
+ADDR2 = 1 << 7
+ADDR1 = 1 << 6
+
+ADDR2_SHITF = 4
+ADDR1_SHITF = 2
+
+# 寻址方式
+AM_INS = 0  # 立即寻址
+AM_REG = 1  # 寄存器寻址
+AM_DIR = 2  # 直接寻址
+AM_RAM = 3  # 寄存器间接寻址
+
+
