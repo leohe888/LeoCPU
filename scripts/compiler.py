@@ -31,6 +31,12 @@ OP1 = {
     'DEC': ASM.DEC,
     'NOT': ASM.NOT,
     'JMP': ASM.JMP,
+    'JO': ASM.JO,
+    'JNO': ASM.JNO,
+    'JZ': ASM.JZ,
+    'JNZ': ASM.JNZ,
+    'JP': ASM.JP,
+    'JNP': ASM.JNP,
 }
 
 OP0 = {
@@ -97,9 +103,9 @@ class Code(object):
         raise SyntaxError(self)
 
     def prepare_source(self):
-        if self.source.endswith(':'):
+        if self.source.endswith(':'):    # 标签
             self.type = self.TYPE_LABEL
-            self.name = self.source.strip(':')
+            self.name = self.source.strip(':')  # 去掉冒号
             return
         tup = self.source.split(',')
         if len(tup) > 2:
@@ -155,8 +161,8 @@ def compile_program():
         lines = file.readlines()
 
     for index, line in enumerate(lines):
-        source = line.strip()
-        if ';' in source:
+        source = line.strip()   # 去掉前后空格
+        if ';' in source:      # 去掉注释
             match = annotation.match(source)
             source = match.group(1)
         if not source:
@@ -164,11 +170,14 @@ def compile_program():
         code = Code(index + 1, source)
         codes.append(code)
 
+    # 在末尾添加 HLT 指令
     code = Code(index + 2, 'HLT')
     codes.append(code)
 
     result = []
     current = None
+    
+    # 逆向遍历 codes
     for var in range(len(codes) - 1, -1, -1):
         code = codes[var]
         if code.type == Code.TYPE_CODE:
@@ -180,6 +189,7 @@ def compile_program():
             continue
         raise SyntaxError(code)
 
+    # 给代码分配索引
     for index, var in enumerate(result):
         var.index = index
 

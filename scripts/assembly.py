@@ -25,6 +25,13 @@ NOT = (2 << pin.ADDR1_SHITF) | pin.ADDR1
 
 JMP = (3 << pin.ADDR1_SHITF) | pin.ADDR1
 
+JO = (4 << pin.ADDR1_SHITF) | pin.ADDR1
+JNO = (5 << pin.ADDR1_SHITF) | pin.ADDR1
+JZ  = (6 << pin.ADDR1_SHITF) | pin.ADDR1
+JNZ = (7 << pin.ADDR1_SHITF) | pin.ADDR1
+JP = (8 << pin.ADDR1_SHITF) | pin.ADDR1
+JNP = (9 << pin.ADDR1_SHITF) | pin.ADDR1
+
 NOP = 0
 HLT = 0x3f
 
@@ -207,6 +214,42 @@ INSTRUCTIONS = {
         },
         JMP: {
             # JMP IMM
+            pin.AM_INS: [
+                pin.DST_OUT | pin.PC_IN,
+            ]
+        },
+        JO: {
+            # JO IMM
+            pin.AM_INS: [
+                pin.DST_OUT | pin.PC_IN,
+            ]
+        },
+        JNO: {
+            # JNO IMM
+            pin.AM_INS: [
+                pin.DST_OUT | pin.PC_IN,
+            ]
+        },
+        JZ: {
+            # JZ IMM
+            pin.AM_INS: [
+                pin.DST_OUT | pin.PC_IN,
+            ]
+        },
+        JNZ: {
+            # JNZ IMM
+            pin.AM_INS: [
+                pin.DST_OUT | pin.PC_IN,
+            ]
+        },
+        JP: {
+            # JP IMM
+            pin.AM_INS: [
+                pin.DST_OUT | pin.PC_IN,
+            ]
+        },
+        JNP: {
+            # JNP IMM
             pin.AM_INS: [
                 pin.DST_OUT | pin.PC_IN,
             ]

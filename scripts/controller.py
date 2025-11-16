@@ -7,6 +7,8 @@ filename = os.path.join(dirname, 'micro.bin')
 
 micro = [pin.HLT for _ in range(0x10000)]   # 微程序控制器的 ROM 要存放的内容
 
+CJMPS = {ASM.JO, ASM.JNO, ASM.JZ, ASM.JNZ, ASM.JP, ASM.JNP}
+
 def compile_addr2(addr, ir, psw, index):
     global micro
 
@@ -28,8 +30,28 @@ def compile_addr2(addr, ir, psw, index):
     else:
         micro[addr] = pin.CYC
 
+def get_condition_jump(exec, op, psw):
+    overflow = psw & 1
+    zero = psw & 2
+    parity = psw & 4
+
+    if op == ASM.JO and overflow:
+        return exec
+    if op == ASM.JNO and not overflow:
+        return exec
+    if op == ASM.JZ and zero:
+        return exec
+    if op == ASM.JNZ and not zero:
+        return exec
+    if op == ASM.JP and parity:
+        return exec
+    if op == ASM.JNP and not parity:
+        return exec
+    return [pin.CYC]
+
 def compile_addr1(addr, ir, psw, index):
     global micro
+    global CJMPS
 
     op = ir & 0xfc
     amd = ir & 3 # 目的操作数的寻址方式
@@ -43,6 +65,10 @@ def compile_addr1(addr, ir, psw, index):
         micro[addr] = pin.CYC
         return
     EXEC = INST[op][amd]
+
+    if op in CJMPS:
+        EXEC = get_condition_jump(EXEC, op, psw)
+
     if index < len(EXEC):
         micro[addr] = EXEC[index]
     else:
@@ -57,6 +83,7 @@ def compile_addr0(addr, ir, psw, index):
     if op not in INST:
         micro[addr] = pin.CYC
         return
+
     EXEC = INST[op]
     if index < len(EXEC):
         micro[addr] = EXEC[index]
@@ -76,7 +103,7 @@ for addr in range(0x10000):
     addr2 = ir & (1 << 7)
     addr1 = ir & (1 << 6)
 
-    index = cyc- len(ASM.FETCH)
+    index = cyc - len(ASM.FETCH)
 
     if addr2:   # 二地址指令
         compile_addr2(addr, ir, psw, index)
@@ -87,7 +114,7 @@ for addr in range(0x10000):
 
 with open(filename, 'wb') as file:
     for var in micro:
-        value = var.to_bytes(4, 'little')
+        value = var.to_bytes(4, byteorder='little')
         file.write(value)
 
 print("Compile micro instruction finish!!!")
