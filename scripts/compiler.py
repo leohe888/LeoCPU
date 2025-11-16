@@ -1,4 +1,5 @@
-#coding=utf-8
+# coding=utf-8
+
 import os
 import re
 
@@ -13,6 +14,7 @@ outputfile = os.path.join(dirname, 'program.bin')
 annotation = re.compile(r'(.*?);.*')
 
 codes = []
+marks = {}
 
 OP2 = {
     'MOV': ASM.MOV,
@@ -20,7 +22,7 @@ OP2 = {
     'SUB': ASM.SUB,
     'CMP': ASM.CMP,
     'AND': ASM.AND,
-    'OR':  ASM.OR,
+    'OR': ASM.OR,
     'XOR': ASM.XOR,
 }
 
@@ -28,6 +30,7 @@ OP1 = {
     'INC': ASM.INC,
     'DEC': ASM.DEC,
     'NOT': ASM.NOT,
+    'JMP': ASM.JMP,
 }
 
 OP0 = {
@@ -47,14 +50,19 @@ REGISTERS = {
 }
 
 class Code(object):
-    def __init__(self, number, source):
+    TYPE_CODE = 1
+    TYPE_LABEL = 2
+
+    def __init__(self, number, source: str):
         self.number = number
         self.source = source.upper()
         self.op = None
         self.dst = None
         self.src = None
+        self.type = self.TYPE_CODE
+        self.index = 0
         self.prepare_source()
-    
+
     def get_op(self):
         if self.op in OP2:
             return OP2[self.op]
@@ -65,29 +73,34 @@ class Code(object):
         raise SyntaxError(self)
 
     def get_am(self, addr):
+        global marks
         if not addr:
             return None, None
+        if addr in marks:
+            return pin.AM_INS, marks[addr].index * 3
         if addr in REGISTERS:   # 寄存器寻址
             return pin.AM_REG, REGISTERS[addr]
         if re.match(r'^[0-9]+$', addr): # 立即寻址（十进制）
             return pin.AM_INS, int(addr)
         if re.match(r'^0X[0-9A-F]+$', addr):    # 立即寻址（十六进制）
             return pin.AM_INS, int(addr, 16)
-        
-        match = re.match(r'^\[([0-9]+)\]', addr)
+
+        match = re.match(r'^\[([0-9]+)\]$', addr)
         if match:   # 直接寻址（十进制）
             return pin.AM_DIR, int(match.group(1))
-        match = re.match(r'^\[(0X[0-9A-F]+)\]', addr)
+        match = re.match(r'^\[(0X[0-9A-F]+)\]$', addr)
         if match:   # 直接寻址（十六进制）
             return pin.AM_DIR, int(match.group(1), 16)
-        
-        match = re.match(r'^\[(.+)\]', addr)
+        match = re.match(r'^\[(.+)\]$', addr)
         if match and match.group(1) in REGISTERS:   # 寄存器间接寻址
             return pin.AM_RAM, REGISTERS[match.group(1)]
-
         raise SyntaxError(self)
 
     def prepare_source(self):
+        if self.source.endswith(':'):
+            self.type = self.TYPE_LABEL
+            self.name = self.source.strip(':')
+            return
         tup = self.source.split(',')
         if len(tup) > 2:
             raise SyntaxError(self)
@@ -108,7 +121,7 @@ class Code(object):
 
         if src is not None and (amd, ams) not in ASM.INSTRUCTIONS[2][op]:
             raise SyntaxError(self)
-        if src is None and not src and dst and amd not in ASM.INSTRUCTIONS[1][op]:
+        if src is None and dst and amd not in ASM.INSTRUCTIONS[1][op]:
             raise SyntaxError(self)
         if src is None and dst is None and op not in ASM.INSTRUCTIONS[0]:
             raise SyntaxError(self)
@@ -118,7 +131,7 @@ class Code(object):
         dst = dst or 0
         src = src or 0
 
-        if op in OP2SET: 
+        if op in OP2SET:
             ir = op | (amd << 2) | ams
         elif op in OP1SET:
             ir = op | amd
@@ -135,6 +148,9 @@ class SyntaxError(Exception):
         self.code = code
 
 def compile_program():
+    global codes
+    global marks
+
     with open(inputfile, encoding='utf8') as file:
         lines = file.readlines()
 
@@ -148,15 +164,33 @@ def compile_program():
         code = Code(index + 1, source)
         codes.append(code)
 
+    code = Code(index + 2, 'HLT')
+    codes.append(code)
+
+    result = []
+    current = None
+    for var in range(len(codes) - 1, -1, -1):
+        code = codes[var]
+        if code.type == Code.TYPE_CODE:
+            current = code
+            result.insert(0, code)
+            continue
+        if code.type == Code.TYPE_LABEL:
+            marks[code.name] = current
+            continue
+        raise SyntaxError(code)
+
+    for index, var in enumerate(result):
+        var.index = index
+
     with open(outputfile, 'wb') as file:
-        for code in codes:
+        for code in result:
             values = code.compile_code()
             for value in values:
-                result = value.to_bytes(1, 'little')
+                result = value.to_bytes(1, byteorder='little')
                 file.write(result)
 
 def main():
-    # compile_program()
     try:
         compile_program()
     except SyntaxError as e:

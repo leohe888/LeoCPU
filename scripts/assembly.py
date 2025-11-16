@@ -23,6 +23,8 @@ DEC = (1 << pin.ADDR1_SHITF) | pin.ADDR1
 
 NOT = (2 << pin.ADDR1_SHITF) | pin.ADDR1
 
+JMP = (3 << pin.ADDR1_SHITF) | pin.ADDR1
+
 NOP = 0
 HLT = 0x3f
 
@@ -201,6 +203,12 @@ INSTRUCTIONS = {
             pin.AM_REG: [
                 pin.DST_R | pin.A_IN,
                 pin.OP_NOT | pin.ALU_OUT | pin.DST_W | pin.ALU_PSW
+            ]
+        },
+        JMP: {
+            # JMP IMM
+            pin.AM_INS: [
+                pin.DST_OUT | pin.PC_IN,
             ]
         }
     },
