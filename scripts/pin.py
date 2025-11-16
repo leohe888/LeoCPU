@@ -1,3 +1,4 @@
+#coding=utf-8
 MSR = 1
 MAR = 2
 MDR = 3
