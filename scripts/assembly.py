@@ -10,8 +10,12 @@ FETCH = [
     pin.RAM_OUT | pin.SRC_IN | pin.PC_INC,
 ]
 
-MOV = 0 | pin.ADDR2
+MOV = (0 << pin.ADDR2_SHITF) | pin.ADDR2
 ADD = (1 << pin.ADDR2_SHITF) | pin.ADDR2
+SUB = (2 << pin.ADDR2_SHITF) | pin.ADDR2
+
+INC = (0 << pin.ADDR1_SHITF) | pin.ADDR1
+DEC = (1 << pin.ADDR1_SHITF) | pin.ADDR1
 
 NOP = 0
 HLT = 0x3f
@@ -85,10 +89,51 @@ INSTRUCTIONS = {
                 pin.DST_R | pin.MAR_IN,
                 pin.RAM_IN | pin.T1_OUT
             ]
+        },
+        ADD: {
+            # ADD REG, IMM
+            (pin.AM_REG, pin.AM_INS): [
+                pin.DST_R | pin.A_IN,
+                pin.SRC_OUT | pin.B_IN,
+                pin.OP_ADD | pin.ALU_OUT | pin.DST_W | pin.ALU_PSW
+            ],
+            # ADD REG, REG
+            (pin.AM_REG, pin.AM_REG): [
+                pin.DST_R | pin.A_IN,
+                pin.SRC_R | pin.B_IN,
+                pin.OP_ADD | pin.ALU_OUT | pin.DST_W | pin.ALU_PSW
+            ],
+        },
+        SUB: {
+            # SUB REG, IMM
+            (pin.AM_REG, pin.AM_INS): [
+                pin.DST_R | pin.A_IN,
+                pin.SRC_OUT | pin.B_IN,
+                pin.OP_SUB | pin.ALU_OUT | pin.DST_W | pin.ALU_PSW
+            ],
+            # SUB REG, REG
+            (pin.AM_REG, pin.AM_REG): [
+                pin.DST_R | pin.A_IN,
+                pin.SRC_R | pin.B_IN,
+                pin.OP_SUB | pin.ALU_OUT | pin.DST_W | pin.ALU_PSW
+            ],
         }
     },
     1: {
-        
+        INC: {
+            # INC REG
+            pin.AM_REG: [
+                pin.DST_R | pin.A_IN,
+                pin.OP_INC | pin.ALU_OUT | pin.DST_W | pin.ALU_PSW
+            ]
+        },
+        DEC: {
+            # DEC REG
+            pin.AM_REG: [
+                pin.DST_R | pin.A_IN,
+                pin.OP_DEC | pin.ALU_OUT | pin.DST_W | pin.ALU_PSW
+            ]
+        }
     },
     0: {
         NOP: [
