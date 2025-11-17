@@ -1,11 +1,18 @@
 MOV SS, 1
-MOV SP, 0X10
-MOV D, 10
-PUSH D
-PUSH 1
-POP  C
-POP B
-MOV A, C
-ADD A, B
-MOV D, A
-HLT
+MOV SP, 0X20
+JMP START
+
+show:
+    MOV D, 255
+    RET
+
+start:
+    MOV C, 0
+
+increase:
+    INC C
+    MOV D, C
+    call show
+    JMP increase
+
+    HLT

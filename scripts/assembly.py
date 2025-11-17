@@ -35,7 +35,10 @@ JNP = (9 << pin.ADDR1_SHITF) | pin.ADDR1
 PUSH = (10 << pin.ADDR1_SHITF) | pin.ADDR1
 POP = (11 << pin.ADDR1_SHITF) | pin.ADDR1
 
+CALL = (12 << pin.ADDR1_SHITF) | pin.ADDR1
+
 NOP = 0
+RET = 1
 HLT = 0x3f
 
 INSTRUCTIONS = {
@@ -287,14 +290,44 @@ INSTRUCTIONS = {
                 pin.OP_INC | pin.SP_IN | pin.ALU_OUT,
                 pin.CS_OUT | pin.MSR_IN,
             ]
-        }
+        },
+        CALL: {
+            # CALL INS
+            pin.AM_INS: [
+                pin.SP_OUT | pin.A_IN,
+                pin.OP_DEC | pin.SP_IN | pin.ALU_OUT,
+                pin.SP_OUT | pin.MAR_IN,
+                pin.SS_OUT | pin.MSR_IN,
+                pin.PC_OUT | pin.RAM_IN,
+                pin.DST_OUT | pin.PC_IN,
+                pin.CS_OUT | pin.MSR_IN,
+            ],
+            # CALL REG
+            pin.AM_REG: [
+                pin.SP_OUT | pin.A_IN,
+                pin.OP_DEC | pin.SP_IN | pin.ALU_OUT,
+                pin.SP_OUT | pin.MAR_IN,
+                pin.SS_OUT | pin.MSR_IN,
+                pin.PC_OUT | pin.RAM_IN,
+                pin.DST_R | pin.PC_IN,
+                pin.CS_OUT | pin.MSR_IN,
+            ],
+        },
     },
     0: {
         NOP: [
             pin.CYC,
         ],
+        RET: [
+            pin.SP_OUT | pin.MAR_IN,
+            pin.SS_OUT | pin.MSR_IN,
+            pin.PC_IN | pin.RAM_OUT,
+            pin.SP_OUT | pin.A_IN,
+            pin.OP_INC | pin.SP_IN | pin.ALU_OUT,
+            pin.CS_OUT | pin.MSR_IN,
+        ],
         HLT: [
             pin.HLT,
-        ]
+        ],
     }
 }
