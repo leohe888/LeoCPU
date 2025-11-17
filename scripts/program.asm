@@ -4,7 +4,7 @@ JMP START
 
 show:
     MOV D, 255
-    RET
+    IRET
 
 start:
     MOV C, 0
@@ -12,7 +12,7 @@ start:
 increase:
     INC C
     MOV D, C
-    call show
+    INT show
     JMP increase
 
     HLT
