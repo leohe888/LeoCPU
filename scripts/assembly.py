@@ -1,6 +1,6 @@
 import pin
 
-# 取指的微程序
+# 取指微程序
 FETCH = [
     pin.PC_OUT | pin.MAR_IN,
     pin.RAM_OUT | pin.IR_IN | pin.PC_INC,
@@ -31,6 +31,9 @@ JZ  = (6 << pin.ADDR1_SHITF) | pin.ADDR1
 JNZ = (7 << pin.ADDR1_SHITF) | pin.ADDR1
 JP = (8 << pin.ADDR1_SHITF) | pin.ADDR1
 JNP = (9 << pin.ADDR1_SHITF) | pin.ADDR1
+
+PUSH = (10 << pin.ADDR1_SHITF) | pin.ADDR1
+POP = (11 << pin.ADDR1_SHITF) | pin.ADDR1
 
 NOP = 0
 HLT = 0x3f
@@ -252,6 +255,37 @@ INSTRUCTIONS = {
             # JNP IMM
             pin.AM_INS: [
                 pin.DST_OUT | pin.PC_IN,
+            ]
+        },
+        PUSH: {
+            # PUSH INS
+            pin.AM_INS: [
+                pin.SP_OUT | pin.A_IN,
+                pin.OP_DEC | pin.SP_IN | pin.ALU_OUT,
+                pin.SP_OUT | pin.MAR_IN,
+                pin.SS_OUT | pin.MSR_IN,
+                pin.DST_OUT | pin.RAM_IN,
+                pin.CS_OUT | pin.MSR_IN,
+            ],
+            # PUSH REG
+            pin.AM_REG: [
+                pin.SP_OUT | pin.A_IN,
+                pin.OP_DEC | pin.SP_IN | pin.ALU_OUT,
+                pin.SP_OUT | pin.MAR_IN,
+                pin.SS_OUT | pin.MSR_IN,
+                pin.DST_R | pin.RAM_IN,
+                pin.CS_OUT | pin.MSR_IN,
+            ],
+        },
+        POP: {
+            # POP REG
+            pin.AM_REG: [
+                pin.SP_OUT | pin.MAR_IN,
+                pin.SS_OUT | pin.MSR_IN,
+                pin.DST_W | pin.RAM_OUT,
+                pin.SP_OUT | pin.A_IN,
+                pin.OP_INC | pin.SP_IN | pin.ALU_OUT,
+                pin.CS_OUT | pin.MSR_IN,
             ]
         }
     },
